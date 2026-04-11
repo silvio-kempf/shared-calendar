@@ -44,7 +44,12 @@ export default function CalendarView({ title, location, entries, currentUser, on
           height="auto"
           events={events}
           selectable
+          dateClick={(info) => {
+            onSelect(info.dateStr, info.dateStr)
+          }}
           selectMinDistance={0}
+          longPressDelay={200}
+          selectLongPressDelay={200}
           select={(info) => {
             onSelect(info.startStr, shiftDate(info.endStr, -1))
             info.view.calendar.unselect()
