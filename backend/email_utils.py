@@ -41,10 +41,10 @@ def notify_pending_entry(entry, creator_name: str, participants: list, approver_
 <html lang="de">
 <head><meta charset="UTF-8"></head>
 <body style="margin:0;padding:0;background:#f5f6fa;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="padding:32px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="padding:16px 8px;">
     <tr><td align="center">
       <table width="480" cellpadding="0" cellspacing="0"
-             style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);">
+             style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,0.08);max-width:480px;width:100%;">
 
         <!-- Header -->
         <tr>
