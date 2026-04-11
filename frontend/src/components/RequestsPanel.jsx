@@ -25,10 +25,15 @@ export default function RequestsPanel({ entries, onClose, onUpdated }) {
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-start justify-end p-4 sm:p-6"
+      className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-start sm:justify-end sm:p-6"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="glass-panel rounded-3xl sm:rounded-2xl shadow-2xl w-full max-w-md flex flex-col max-h-[90svh] sm:max-h-[90vh] sm:mt-14">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md flex flex-col max-h-[90svh] sm:mt-14">
+        {/* Drag handle — mobile only */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
+
         {/* Header */}
         <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between flex-shrink-0">
           <div>
@@ -41,7 +46,7 @@ export default function RequestsPanel({ entries, onClose, onUpdated }) {
           </div>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+            className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100"
           >
             ✕
           </button>
@@ -51,25 +56,21 @@ export default function RequestsPanel({ entries, onClose, onUpdated }) {
         <div className="overflow-y-auto flex-1 p-4 space-y-3">
           {pending.length === 0 ? (
             <div className="text-center py-12 text-gray-400">
+              <div className="text-3xl mb-2">✓</div>
               <div className="text-sm font-medium">Alles erledigt!</div>
             </div>
           ) : (
             pending.map((e) => (
-              <div
-                key={e.id}
-                className="bg-gray-50 rounded-2xl p-4 border border-gray-100"
-              >
-                {/* Who */}
+              <div key={e.id} className="bg-gray-50 rounded-2xl p-4 border border-gray-100">
                 <div className="flex items-center gap-2.5 mb-3">
                   <Avatar user={e.user} className="w-9 h-9" textSize="text-sm" />
                   <div>
                     <div className="font-semibold text-gray-800 text-sm">{e.user.full_name}</div>
                     <div className="text-xs text-gray-400">möchte eintragen</div>
                   </div>
-                  <span className="ml-auto text-sm">{LOCATION_LABEL[e.location]}</span>
+                  <span className="ml-auto text-sm font-medium">{LOCATION_LABEL[e.location]}</span>
                 </div>
 
-                {/* Dates */}
                 <div className="flex items-center gap-1.5 text-sm text-gray-700 mb-2">
                   <span className="font-medium">{formatDate(e.start_date)}</span>
                   {e.start_date !== e.end_date && (
@@ -80,29 +81,26 @@ export default function RequestsPanel({ entries, onClose, onUpdated }) {
                   )}
                 </div>
 
-                {/* Participants */}
                 {e.participants?.length > 0 && (
                   <div className="text-xs text-gray-500 mb-2">
                     👥 {e.participants.join(', ')}
                   </div>
                 )}
 
-                {/* Note */}
                 {e.note && (
                   <div className="text-xs text-gray-500 mb-3 italic">"{e.note}"</div>
                 )}
 
-                {/* Actions */}
                 <div className="flex gap-2 mt-3">
                   <button
                     onClick={() => approve(e.id)}
-                    className="flex-1 bg-emerald-500 text-white py-2 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition"
+                    className="flex-1 bg-emerald-500 text-white py-2.5 rounded-xl text-sm font-semibold hover:bg-emerald-600 transition"
                   >
                     ✓ Genehmigen
                   </button>
                   <button
                     onClick={() => reject(e.id)}
-                    className="flex-1 bg-red-50 text-red-600 py-2 rounded-xl text-sm font-semibold hover:bg-red-100 transition"
+                    className="flex-1 bg-red-50 text-red-600 py-2.5 rounded-xl text-sm font-semibold hover:bg-red-100 transition"
                   >
                     ✕ Ablehnen
                   </button>

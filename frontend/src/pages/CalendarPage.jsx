@@ -61,17 +61,16 @@ export default function CalendarPage({ user, setUser }) {
 
         {/* Mobile location toggle */}
         <div className="flex lg:hidden glass-panel rounded-2xl p-1 animate-fade-up-delay">
-          {[['rome', '🇮🇹', 'Rom'], ['mallorca', '🇪🇸', 'Mallorca']].map(([loc, flag, name]) => (
+          {[['rome', 'Rom'], ['mallorca', 'Mallorca']].map(([loc, name]) => (
             <button
               key={loc}
               onClick={() => setActiveLocation(loc)}
-              className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+              className={`flex-1 flex items-center justify-center py-2.5 rounded-xl text-sm font-semibold transition-all ${
                 activeLocation === loc
                   ? 'bg-indigo-600 text-white shadow-sm'
                   : 'text-gray-500 hover:text-gray-700'
               }`}
             >
-              <span className="text-base">{flag}</span>
               {name}
             </button>
           ))}

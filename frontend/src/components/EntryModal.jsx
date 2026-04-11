@@ -72,10 +72,14 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+      className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="glass-panel rounded-2xl shadow-2xl w-full max-w-md">
+      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[92svh] overflow-y-auto">
+        {/* Drag handle — visible on mobile only */}
+        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+          <div className="w-10 h-1 rounded-full bg-gray-300" />
+        </div>
         <div className="p-5 sm:p-6">
           {/* Header */}
           <div className="flex justify-between items-center mb-5">
