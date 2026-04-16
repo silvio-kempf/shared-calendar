@@ -78,7 +78,7 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div
-        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[92svh] overflow-y-auto"
+        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[92svh] overflow-y-auto overflow-x-hidden"
         style={sheetStyle}
       >
         {/* Drag handle — visible on mobile only */}
@@ -130,7 +130,7 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
 
             {/* Date range */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
+              <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Von</label>
                 <input
                   type="date"
@@ -140,19 +140,19 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
                     setStartDate(e.target.value)
                     if (endDate < e.target.value) setEndDate(e.target.value)
                   }}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                  className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
                   disabled={!canEdit}
                   required
                 />
               </div>
-              <div>
+              <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Bis</label>
                 <input
                   type="date"
                   value={endDate}
                   min={startDate}
                   onChange={(e) => canEdit && setEndDate(e.target.value)}
-                  className="w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                  className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
                   disabled={!canEdit}
                   required
                 />

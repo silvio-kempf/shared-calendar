@@ -69,7 +69,10 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
       const r = await api.post('/auth/me/avatar', form)
       setUser(r.data)
     } catch (err) {
-      alert(err.response?.data?.detail || 'Upload fehlgeschlagen')
+      const message = err.response?.status === 413
+        ? 'Das Bild ist zu gross. Bitte waehle eine kleinere Datei.'
+        : err.response?.data?.detail || 'Upload fehlgeschlagen'
+      alert(message)
     } finally {
       setUploading(false)
       e.target.value = ''
