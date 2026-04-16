@@ -1,7 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate } from 'react-router-dom'
 import Avatar from './Avatar'
 import api from '../api'
+import useMobileSheet from '../hooks/useMobileSheet'
 
 const COLORS = [
   '#EF4444', '#F97316', '#EAB308', '#22C55E', '#14B8A6',
@@ -16,11 +18,20 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
   const [saved, setSaved] = useState(false)
   const [uploading, setUploading] = useState(false)
   const dropdownRef = useRef(null)
+  const mobileSheetRef = useRef(null)
   const fileRef = useRef(null)
+  const closeDropdown = () => setOpen(false)
+  const { handleProps, sheetStyle } = useMobileSheet({ open, onClose: closeDropdown })
 
   useEffect(() => {
     const handler = (e) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+      if (
+        dropdownRef.current?.contains(e.target) ||
+        mobileSheetRef.current?.contains(e.target)
+      ) {
+        return
+      }
+      if (dropdownRef.current || mobileSheetRef.current) {
         setOpen(false)
       }
     }
@@ -89,12 +100,11 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
             className="absolute inset-0 rounded-full bg-black/30 flex items-center justify-center sm:bg-black/0 sm:hover:bg-black/40 sm:opacity-0 sm:hover:opacity-100 transition-all"
             title="Foto hochladen"
           >
-            <span className="text-white text-lg">📷</span>
           </button>
           <input
             ref={fileRef}
             type="file"
-            accept="image/jpeg,image/png,image/webp"
+            accept="image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
             className="hidden"
             onChange={handleAvatarUpload}
           />
@@ -138,9 +148,8 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
               key={c}
               type="button"
               onClick={() => setColor(c)}
-              className={`w-8 h-8 rounded-full border-4 transition-transform ${
-                color === c ? 'border-gray-700 scale-110' : 'border-white shadow'
-              }`}
+              className={`w-8 h-8 rounded-full border-4 transition-transform ${color === c ? 'border-gray-700 scale-110' : 'border-white shadow'
+                }`}
               style={{ backgroundColor: c }}
             />
           ))}
@@ -159,7 +168,7 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
         {user.is_admin && (
           <Link
             to="/admin"
-            onClick={() => setOpen(false)}
+            onClick={closeDropdown}
             className="block text-sm text-indigo-600 hover:text-indigo-800 font-medium py-1.5"
           >
             Benutzerverwaltung
@@ -174,6 +183,31 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
       </div>
     </>
   )
+
+  const mobileDropdown = open && typeof document !== 'undefined'
+    ? createPortal(
+      <>
+        <div
+          className="sm:hidden fixed inset-0 bg-black/40 z-40"
+          onClick={closeDropdown}
+        />
+        <div
+          ref={mobileSheetRef}
+          className="sm:hidden fixed inset-x-0 bottom-0 bg-white rounded-t-3xl shadow-2xl z-50 p-5 pb-7 max-h-[85svh] overflow-y-auto"
+          style={sheetStyle}
+        >
+          <div
+            {...handleProps}
+            className="flex justify-center mb-4 cursor-grab active:cursor-grabbing"
+          >
+            <div className="w-10 h-1 rounded-full bg-gray-300" />
+          </div>
+          {dropdownContent}
+        </div>
+      </>,
+      document.body,
+    )
+    : null
 
   return (
     <nav className="bg-white/80 border-b border-white/60 shadow-sm backdrop-blur sticky top-0 z-40">
@@ -213,22 +247,6 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
               <span className="text-sm font-medium text-gray-700 hidden sm:block">{user.full_name}</span>
             </button>
 
-            {/* Mobile: full-screen backdrop + bottom sheet */}
-            {open && (
-              <div
-                className="sm:hidden fixed inset-0 bg-black/40 z-40"
-                onClick={() => setOpen(false)}
-              />
-            )}
-            {open && (
-              <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white rounded-t-3xl shadow-2xl z-50 p-5 max-h-[85svh] overflow-y-auto">
-                <div className="flex justify-center mb-4">
-                  <div className="w-10 h-1 rounded-full bg-gray-300" />
-                </div>
-                {dropdownContent}
-              </div>
-            )}
-
             {/* Desktop: dropdown */}
             {open && (
               <div className="hidden sm:block absolute right-0 mt-2 w-72 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 z-50">
@@ -238,6 +256,7 @@ export default function Navbar({ user, setUser, pendingCount = 0, onShowRequests
           </div>
         </div>
       </div>
+      {mobileDropdown}
     </nav>
   )
 }

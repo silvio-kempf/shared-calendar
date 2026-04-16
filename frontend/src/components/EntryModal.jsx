@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import Avatar from './Avatar'
 import api from '../api'
+import useMobileSheet from '../hooks/useMobileSheet'
 
 export default function EntryModal({ modal, currentUser, participants = [], onClose, onSaved }) {
   const { entry } = modal
@@ -15,6 +16,7 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
   const [note, setNote] = useState(entry?.note || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const { handleProps, sheetStyle } = useMobileSheet({ open: true, onClose })
 
   const toggleParticipant = (name) => {
     if (!canEdit) return
@@ -75,9 +77,15 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
       className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 sm:p-4"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[92svh] overflow-y-auto">
+      <div
+        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md max-h-[92svh] overflow-y-auto"
+        style={sheetStyle}
+      >
         {/* Drag handle — visible on mobile only */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden">
+        <div
+          {...handleProps}
+          className="flex justify-center pt-3 pb-1 sm:hidden cursor-grab active:cursor-grabbing"
+        >
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
         <div className="p-5 sm:p-6">
@@ -104,18 +112,17 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1.5">Ort</label>
               <div className="grid grid-cols-2 gap-2">
-                {[['rome', '🏛️', 'Roma'], ['mallorca', '🏖️', 'Mallorca']].map(([val, icon, label]) => (
+                {[['rome', '🏛️', 'Rom'], ['mallorca', '🏖️', 'Mallorca']].map(([val, icon, label]) => (
                   <button
                     key={val}
                     type="button"
                     onClick={() => canEdit && setLocation(val)}
-                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition flex items-center justify-center gap-1.5 ${
-                      location === val
-                        ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
-                        : 'border-gray-200 text-gray-600 hover:border-gray-300'
-                    } ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                    className={`py-2.5 rounded-xl border-2 text-sm font-semibold transition flex items-center justify-center gap-1.5 ${location === val
+                      ? 'border-indigo-500 bg-indigo-50 text-indigo-700'
+                      : 'border-gray-200 text-gray-600 hover:border-gray-300'
+                      } ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
                   >
-                    <span>{icon}</span> {label}
+                    {label}
                   </button>
                 ))}
               </div>
@@ -165,11 +172,10 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
                       key={p.id}
                       type="button"
                       onClick={() => toggleParticipant(p.full_name)}
-                      className={`flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full text-sm font-semibold border-2 transition ${
-                        active
-                          ? 'text-white border-transparent'
-                          : 'text-gray-500 border-gray-200 bg-white hover:border-gray-300'
-                      } ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
+                      className={`flex items-center gap-1.5 pl-1 pr-3 py-1 rounded-full text-sm font-semibold border-2 transition ${active
+                        ? 'text-white border-transparent'
+                        : 'text-gray-500 border-gray-200 bg-white hover:border-gray-300'
+                        } ${!canEdit ? 'opacity-60 cursor-default' : 'cursor-pointer'}`}
                       style={active ? { backgroundColor: p.color, borderColor: p.color } : {}}
                     >
                       <Avatar user={p} className="w-5 h-5" textSize="text-[9px]" />

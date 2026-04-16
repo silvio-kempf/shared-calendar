@@ -11,13 +11,36 @@ import models
 import auth
 import email_utils
 from database import get_db, engine, Base, SessionLocal
+import io
 import os
 import shutil
 import uuid
 
+try:
+    from PIL import Image, ImageOps
+except ImportError:
+    Image = None
+    ImageOps = None
+
+try:
+    from pillow_heif import register_heif_opener
+except ImportError:
+    register_heif_opener = None
+
+if Image and register_heif_opener:
+    register_heif_opener()
+
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Familienkalender")
+
+ALLOWED_AVATAR_EXTENSIONS = {"jpg", "jpeg", "png", "webp", "heic", "heif"}
+HEIC_CONTENT_TYPES = {
+    "image/heic",
+    "image/heif",
+    "image/heic-sequence",
+    "image/heif-sequence",
+}
 
 # Serve uploaded avatars as static files
 AVATARS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "data", "avatars")
@@ -85,6 +108,45 @@ def parse_participants(raw: Optional[str]) -> List[str]:
 
 def serialize_participants(names: List[str]) -> str:
     return ",".join(names)
+
+
+def prepare_avatar_upload(file: UploadFile):
+    content_type = (file.content_type or "").lower()
+    filename = file.filename or "file"
+    ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+
+    if not content_type.startswith("image/"):
+        raise HTTPException(400, "Nur Bilddateien erlaubt")
+    if ext not in ALLOWED_AVATAR_EXTENSIONS:
+        raise HTTPException(400, "Nur JPG, PNG, WebP oder HEIC erlaubt")
+
+    is_heic = ext in {"heic", "heif"} or content_type in HEIC_CONTENT_TYPES
+    file.file.seek(0)
+
+    if not is_heic:
+        return file.file, ext
+
+    if not Image or not ImageOps or not register_heif_opener:
+        raise HTTPException(500, "HEIC/HEIF-Unterstuetzung ist auf dem Server noch nicht installiert")
+
+    try:
+        with Image.open(file.file) as image:
+            image = ImageOps.exif_transpose(image)
+
+            if image.mode in ("RGBA", "LA") or (image.mode == "P" and "transparency" in image.info):
+                alpha_image = image.convert("RGBA")
+                background = Image.new("RGB", alpha_image.size, (255, 255, 255))
+                background.paste(alpha_image, mask=alpha_image.getchannel("A"))
+                image = background
+            else:
+                image = image.convert("RGB")
+
+            output = io.BytesIO()
+            image.save(output, format="JPEG", quality=90)
+            output.seek(0)
+            return output, "jpg"
+    except Exception as exc:
+        raise HTTPException(400, "HEIC/HEIF-Bild konnte nicht verarbeitet werden") from exc
 
 
 class EntryOut(BaseModel):
@@ -244,11 +306,7 @@ def upload_avatar(
     db: Session = Depends(get_db),
     current_user=Depends(auth.get_current_user),
 ):
-    if not file.content_type or not file.content_type.startswith("image/"):
-        raise HTTPException(400, "Nur Bilddateien erlaubt")
-    ext = (file.filename or "file").rsplit(".", 1)[-1].lower()
-    if ext not in ("jpg", "jpeg", "png", "webp"):
-        raise HTTPException(400, "Nur JPG, PNG oder WebP erlaubt")
+    source_file, ext = prepare_avatar_upload(file)
 
     # Remove old avatar file if present
     if current_user.avatar_url:
@@ -258,7 +316,7 @@ def upload_avatar(
 
     filename = f"user_{current_user.id}_{uuid.uuid4().hex[:8]}.{ext}"
     with open(os.path.join(AVATARS_DIR, filename), "wb") as f:
-        shutil.copyfileobj(file.file, f)
+        shutil.copyfileobj(source_file, f)
 
     current_user.avatar_url = f"/avatars/{filename}"
     db.commit()

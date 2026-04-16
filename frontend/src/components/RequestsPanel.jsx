@@ -1,5 +1,6 @@
 import Avatar from './Avatar'
 import api from '../api'
+import useMobileSheet from '../hooks/useMobileSheet'
 
 const LOCATION_LABEL = { rome: '🇮🇹 Rom', mallorca: '🇪🇸 Mallorca' }
 
@@ -11,6 +12,7 @@ function formatDate(d) {
 
 export default function RequestsPanel({ entries, onClose, onUpdated }) {
   const pending = entries.filter((e) => e.status === 'pending')
+  const { handleProps, sheetStyle } = useMobileSheet({ open: true, onClose })
 
   const approve = async (id) => {
     await api.post(`/entries/${id}/approve`)
@@ -28,9 +30,15 @@ export default function RequestsPanel({ entries, onClose, onUpdated }) {
       className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-start sm:justify-end sm:p-6"
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md flex flex-col max-h-[90svh] sm:mt-14">
+      <div
+        className="bg-white rounded-t-3xl sm:rounded-2xl shadow-2xl w-full sm:max-w-md flex flex-col max-h-[90svh] sm:mt-14"
+        style={sheetStyle}
+      >
         {/* Drag handle — mobile only */}
-        <div className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0">
+        <div
+          {...handleProps}
+          className="flex justify-center pt-3 pb-1 sm:hidden flex-shrink-0 cursor-grab active:cursor-grabbing"
+        >
           <div className="w-10 h-1 rounded-full bg-gray-300" />
         </div>
 
