@@ -30,6 +30,14 @@
   #root {
     min-height: 100svh;
   }
+
+  input[type="date"] {
+    display: block;
+    inline-size: 100%;
+    min-inline-size: 0;
+    max-inline-size: 100%;
+    box-sizing: border-box;
+  }
 }
 
 @layer utilities {

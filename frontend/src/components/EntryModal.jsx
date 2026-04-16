@@ -1,7 +1,15 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Avatar from './Avatar'
 import api from '../api'
 import useMobileSheet from '../hooks/useMobileSheet'
+
+const MOBILE_BREAKPOINT = 640
+
+function isValidIsoDate(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}
 
 export default function EntryModal({ modal, currentUser, participants = [], onClose, onSaved }) {
   const { entry } = modal
@@ -16,7 +24,17 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
   const [note, setNote] = useState(entry?.note || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [isMobile, setIsMobile] = useState(false)
   const { handleProps, sheetStyle } = useMobileSheet({ open: true, onClose })
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+
+    const syncViewport = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    syncViewport()
+    window.addEventListener('resize', syncViewport)
+    return () => window.removeEventListener('resize', syncViewport)
+  }, [])
 
   const toggleParticipant = (name) => {
     if (!canEdit) return
@@ -28,6 +46,14 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
   const handleSave = async (e) => {
     e.preventDefault()
     if (!canEdit) return
+    if (!isValidIsoDate(startDate) || !isValidIsoDate(endDate)) {
+      setError('Bitte Datum im Format JJJJ-MM-TT eingeben.')
+      return
+    }
+    if (endDate < startDate) {
+      setError('Das Enddatum darf nicht vor dem Startdatum liegen.')
+      return
+    }
     setLoading(true)
     setError('')
     try {
@@ -133,14 +159,19 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Von</label>
                 <input
-                  type="date"
+                  type={isMobile ? 'text' : 'date'}
                   value={startDate}
                   onChange={(e) => {
                     if (!canEdit) return
                     setStartDate(e.target.value)
                     if (endDate < e.target.value) setEndDate(e.target.value)
                   }}
+                  placeholder={isMobile ? 'JJJJ-MM-TT' : undefined}
+                  inputMode={isMobile ? 'numeric' : undefined}
+                  autoCapitalize="off"
+                  autoCorrect="off"
                   className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                  style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
                   disabled={!canEdit}
                   required
                 />
@@ -148,16 +179,26 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Bis</label>
                 <input
-                  type="date"
+                  type={isMobile ? 'text' : 'date'}
                   value={endDate}
-                  min={startDate}
                   onChange={(e) => canEdit && setEndDate(e.target.value)}
+                  placeholder={isMobile ? 'JJJJ-MM-TT' : undefined}
+                  inputMode={isMobile ? 'numeric' : undefined}
+                  autoCapitalize="off"
+                  autoCorrect="off"
+                  min={isMobile ? undefined : startDate}
                   className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                  style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
                   disabled={!canEdit}
                   required
                 />
               </div>
             </div>
+            {isMobile && (
+              <p className="text-xs text-gray-400 -mt-1">
+                Datum auf dem iPhone im Format JJJJ-MM-TT eingeben.
+              </p>
+            )}
 
             {/* Participants — pill-style toggles */}
             <div>
