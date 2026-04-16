@@ -11,6 +11,16 @@ function isValidIsoDate(value) {
   return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
 }
 
+function isIosWebKit() {
+  if (typeof navigator === 'undefined') return false
+
+  const ua = navigator.userAgent
+  const isAppleMobile = /iP(hone|ad|od)/.test(ua)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+
+  return isAppleMobile
+}
+
 export default function EntryModal({ modal, currentUser, participants = [], onClose, onSaved }) {
   const { entry } = modal
   const canEdit = !entry || entry.user_id === currentUser.id || currentUser.is_admin
@@ -24,13 +34,17 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
   const [note, setNote] = useState(entry?.note || '')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const [isMobile, setIsMobile] = useState(false)
+  const [useIosDateOverlay, setUseIosDateOverlay] = useState(false)
   const { handleProps, sheetStyle } = useMobileSheet({ open: true, onClose })
 
   useEffect(() => {
     if (typeof window === 'undefined') return undefined
 
-    const syncViewport = () => setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
+    const syncViewport = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT
+      setUseIosDateOverlay(mobile && isIosWebKit())
+    }
+
     syncViewport()
     window.addEventListener('resize', syncViewport)
     return () => window.removeEventListener('resize', syncViewport)
@@ -158,7 +172,7 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Von</label>
-                {isMobile ? (
+                {useIosDateOverlay ? (
                   <div className="relative w-full min-w-0">
                     <div className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white">
                       {startDate || 'JJJJ-MM-TT'}
@@ -195,7 +209,7 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Bis</label>
-                {isMobile ? (
+                {useIosDateOverlay ? (
                   <div className="relative w-full min-w-0">
                     <div className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white">
                       {endDate || 'JJJJ-MM-TT'}
