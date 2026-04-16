@@ -158,47 +158,73 @@ export default function EntryModal({ modal, currentUser, participants = [], onCl
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Von</label>
-                <input
-                  type={isMobile ? 'text' : 'date'}
-                  value={startDate}
-                  onChange={(e) => {
-                    if (!canEdit) return
-                    setStartDate(e.target.value)
-                    if (endDate < e.target.value) setEndDate(e.target.value)
-                  }}
-                  placeholder={isMobile ? 'JJJJ-MM-TT' : undefined}
-                  inputMode={isMobile ? 'numeric' : undefined}
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
-                  style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
-                  disabled={!canEdit}
-                  required
-                />
+                {isMobile ? (
+                  <div className="relative w-full min-w-0">
+                    <div className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white">
+                      {startDate || 'JJJJ-MM-TT'}
+                    </div>
+                    <input
+                      type="date"
+                      value={startDate}
+                      onChange={(e) => {
+                        if (!canEdit) return
+                        setStartDate(e.target.value)
+                        if (endDate < e.target.value) setEndDate(e.target.value)
+                      }}
+                      className="absolute inset-0 w-full h-full opacity-0"
+                      style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
+                      disabled={!canEdit}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => {
+                      if (!canEdit) return
+                      setStartDate(e.target.value)
+                      if (endDate < e.target.value) setEndDate(e.target.value)
+                    }}
+                    className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                    style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
+                    disabled={!canEdit}
+                    required
+                  />
+                )}
               </div>
               <div className="min-w-0">
                 <label className="block text-sm font-medium text-gray-700 mb-1.5">Bis</label>
-                <input
-                  type={isMobile ? 'text' : 'date'}
-                  value={endDate}
-                  onChange={(e) => canEdit && setEndDate(e.target.value)}
-                  placeholder={isMobile ? 'JJJJ-MM-TT' : undefined}
-                  inputMode={isMobile ? 'numeric' : undefined}
-                  autoCapitalize="off"
-                  autoCorrect="off"
-                  min={isMobile ? undefined : startDate}
-                  className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
-                  style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
-                  disabled={!canEdit}
-                  required
-                />
+                {isMobile ? (
+                  <div className="relative w-full min-w-0">
+                    <div className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm text-gray-700 bg-white">
+                      {endDate || 'JJJJ-MM-TT'}
+                    </div>
+                    <input
+                      type="date"
+                      value={endDate}
+                      min={startDate}
+                      onChange={(e) => canEdit && setEndDate(e.target.value)}
+                      className="absolute inset-0 w-full h-full opacity-0"
+                      style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
+                      disabled={!canEdit}
+                      required
+                    />
+                  </div>
+                ) : (
+                  <input
+                    type="date"
+                    value={endDate}
+                    min={startDate}
+                    onChange={(e) => canEdit && setEndDate(e.target.value)}
+                    className="w-full min-w-0 max-w-full border border-gray-300 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-60 disabled:bg-gray-50"
+                    style={{ width: '100%', minWidth: 0, maxWidth: '100%' }}
+                    disabled={!canEdit}
+                    required
+                  />
+                )}
               </div>
             </div>
-            {isMobile && (
-              <p className="text-xs text-gray-400 -mt-1">
-                Datum auf dem iPhone im Format JJJJ-MM-TT eingeben.
-              </p>
-            )}
 
             {/* Participants — pill-style toggles */}
             <div>
